@@ -1,25 +1,17 @@
-const {fetchMyIP, fetchCoordsByIP,fetchISSFlyOverTimes} = require('./iss');
+const {nextISSTimesForMyLocation} = require('./iss');
 
-
-fetchMyIP((error, ip) => {
-  if (error) {
-    console.log("It didn't work!" , error);
-    return;
+nextISSTimesForMyLocation((err,data) => {
+  if (err) {
+    console.log('Something went wrong: ' + err.message);
+    throw new Error(err.message);
   }
 
-  console.log('It worked! Returned IP:',ip);
-  fetchCoordsByIP(ip,(err,geoObj) => {
-    if (err) {
-      console.log('It is not fetching geo information. ',err);
-      return;
-    }
-    console.log(`Your GEO location is Latitude: ${geoObj.latitude}, longitude: ${geoObj.longitude}`);
-    fetchISSFlyOverTimes(geoObj,(err,data) => {
-      if (err) {
-        console.log(`Something went wrong when fetching ISS passing time! `);
-        return;
-      }
-      console.log(data);
-    });
-  });
+  for (let time of data) {
+    const timeNow = Date.now();
+    const riseTimeStamp = timeNow + time.risetime;
+    const newDate = new Date(riseTimeStamp);
+    const duration = time.duration;
+    console.log(`Next pass at ${newDate.toLocaleString()} for ${duration} seconds!`);
+  }
+
 });
